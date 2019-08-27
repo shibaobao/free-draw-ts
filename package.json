@@ -1,0 +1,26 @@
+{
+  "name": "free-draw-ts",
+  "version": "0.0.1",
+  "description": "Free draw shapes use canvas",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && gulp minify"
+  },
+  "keywords": [
+    "Draw",
+    "Free",
+    "Canvas"
+  ],
+  "author": "Stone Shi",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-exec": "^4.0.0",
+    "gulp-shell": "^0.7.1"
+  }
+}
