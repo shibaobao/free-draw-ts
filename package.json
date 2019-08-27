@@ -20,7 +20,7 @@
   "license": "ISC",
   "devDependencies": {
     "gulp": "^4.0.2",
-    "gulp-exec": "^4.0.0",
-    "gulp-shell": "^0.7.1"
+    "gulp-concat": "^2.6.1",
+    "gulp-uglify": "^3.0.2"
   }
 }
