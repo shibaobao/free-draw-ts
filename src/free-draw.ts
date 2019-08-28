@@ -89,7 +89,7 @@ class FreeDraw {
     }
   }
 
-  private refresh() {
+  private refreshShapes() {
     this.clearCanvas()
     for (let key in Object.keys(this.shapeInCanvas)) {
     }
@@ -182,7 +182,7 @@ class FreeDraw {
     if (options.transformCenter) {
       this.transformCenter = options.transformCenter
     }
-    this.refresh()
+    this.refreshShapes()
   }
 
   public updateCtxStyle(style: ShapeStyle) {
