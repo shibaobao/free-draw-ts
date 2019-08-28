@@ -1,46 +1,53 @@
-import { ShapeStyle, HandlePointStyle, RectOption, EllipseOption, PolygonOption, HandlePoint } from '../interface'
+import {
+  ShapeStyle,
+  HandlePointStyle,
+  RectOption,
+  EllipseOption,
+  PolygonOption,
+  HandlePoint
+} from '../interface'
 import { DefaultShapeStyle, DefaultHandlePointStyle } from '../config'
 import { ShapeType } from '../enum'
-import FreeDraw from '../index'
+import FreeDraw from '../free-draw'
 
 class Shape {
-  id: string;
-  edit: boolean = false;
-  type: ShapeType.Ellipse | ShapeType.Polygon | ShapeType.Rect;
-  shape: Path2D;
-  shapeStyle: ShapeStyle;
-  handlePointStyle: HandlePointStyle;
-  
-  svgPath: string;
-  points: Array<Array<number>>;
-  handlePoints: Array<HandlePoint>;
+  id: string
+  edit: boolean = false
+  type: ShapeType.Ellipse | ShapeType.Polygon | ShapeType.Rect
+  shape!: Path2D
+  shapeStyle: ShapeStyle
+  handlePointStyle: HandlePointStyle
 
-  init: boolean = false;
+  svgPath!: string
+  points!: Array<Array<number>>
+  handlePoints!: Array<HandlePoint>
 
-  freeDraw: FreeDraw;
+  init: boolean = false
 
-  constructor (option: RectOption | EllipseOption | PolygonOption) {
-    this.id = option.id;
-    this.type = option.type;
-    this.freeDraw = option.freeDraw;
+  freeDraw: FreeDraw
+
+  constructor(option: RectOption | EllipseOption | PolygonOption) {
+    this.id = option.id
+    this.type = option.type
+    this.freeDraw = option.freeDraw
     if (option.shapeStyle) {
-      this.shapeStyle = option.shapeStyle;
+      this.shapeStyle = option.shapeStyle
     } else {
-      this.shapeStyle = DefaultShapeStyle;
+      this.shapeStyle = DefaultShapeStyle
     }
     if (option.handlePointStyle) {
-      this.handlePointStyle = option.handlePointStyle;
+      this.handlePointStyle = option.handlePointStyle
     } else {
-      this.handlePointStyle = DefaultHandlePointStyle;
+      this.handlePointStyle = DefaultHandlePointStyle
     }
   }
 
-  protected eventTrigger () {}
+  protected eventTrigger() {}
 
-  protected drawRectDragPoint (x: number, y: number, style: HandlePointStyle) {
-    const point = new Path2D();
-    point.rect(x - style.size / 2, y - style.size / 2, style.size, style.size);
-    this.freeDraw.updateCtxStyle(style);
+  protected drawRectDragPoint(x: number, y: number, style: HandlePointStyle) {
+    const point = new Path2D()
+    point.rect(x - style.size / 2, y - style.size / 2, style.size, style.size)
+    this.freeDraw.updateCtxStyle(style)
     this.freeDraw.ctx.fill(point)
     this.freeDraw.ctx.stroke(point)
   }
