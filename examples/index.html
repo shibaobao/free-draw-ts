@@ -1,16 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>FreeDraw Examples</title>
-</head>
-<body>
-  <canvas id="canvas"></canvas>
-  <script src="../dist/free-draw.umd.js"></script>
-  <script>
-    console.log(freeDraw)
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Free Draw with canvas</title>
+    <style>
+      * {
+        font-family: sans-serif;
+      }
+      .canvas-wrap {
+        border: 2px solid;
+      }
+      .options {
+        display: inline-block;
+        padding: 20px 50px;
+        border: 2px solid #2980b9;
+        color: white;
+        background-color: #3498db;
+      }
+      .delete {
+        border: 2px solid #c0392b;
+        background-color: #e74c3c;
+      }
+      .options:hover {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas class="canvas-wrap" id="canvas" width="800" height="600"></canvas>
+    <div class="options-panel">
+      <div class="options" data-name="Ellipse">Ellipse</div>
+      <div class="options" data-name="Rect">Rectangle</div>
+      <div class="options" data-name="Polygon">Polygon</div>
+      <div class="options delete" data-name="delete">Delete All</div>
+    </div>
+    <script src="../dist/free-draw.umd.js"></script>
+    <script>
+      const fd = new freeDraw({
+        canvasDOM: document.getElementById('canvas')
+      })
+      console.log(fd)
+      fd.setZoomAndOffset(1, [0, 0], 0, 0)
+
+      let options = document.querySelectorAll('.options')
+      options.forEach(option => {
+        option.addEventListener('click', event => {
+          const { name } = event.target.dataset
+          try {
+            switch (name) {
+              case 'Ellipse':
+                fd.create({
+                  id: `${name}-${Math.random()}`,
+                  type: name,
+                  x: 100,
+                  y: 100,
+                  radiusX: 50,
+                  radiusY: 50
+                })
+                break
+              case 'Rect':
+                fd.create({
+                  id: `${name}-${Math.random()}`,
+                  type: name,
+                  width: 200,
+                  height: 100,
+                  startPoint: [100, 100]
+                })
+                break
+              case 'Polygon':
+                fd.create({
+                  id: `${name}-${Math.random()}`,
+                  type: name
+                })
+                break
+              case 'delete':
+                fd.removeAll()
+                break
+              default:
+            }
+          } catch (error) {
+            console.log(error)
+            alert(error.message)
+          }
+        })
+      })
+    </script>
+  </body>
 </html>

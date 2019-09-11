@@ -7,7 +7,7 @@ import {
   StringKeyObject,
   ShapeStyle
 } from './interface'
-import { Mode, Mouse, ShapeType } from './enum'
+import { Mode, Mouse, Key, ShapeType } from './enum'
 import Rect from './shapes/rect'
 import Polygon from './shapes/polygon'
 import Ellipse from './shapes/ellipse'
@@ -15,6 +15,8 @@ import Ellipse from './shapes/ellipse'
 class FreeDraw {
   ctx: CanvasRenderingContext2D
   canvasDOM: HTMLCanvasElement
+
+  mouseOnly: Boolean = false
 
   mode: string = Mode.View
   editingShapeId: string = ''
@@ -34,7 +36,7 @@ class FreeDraw {
 
   constructor(options: FreeDrawOptions) {
     this.canvasDOM = options.canvasDOM
-    this.ctx = <CanvasRenderingContext2D>this.canvasDOM.getContext('2d')
+    this.ctx = this.canvasDOM.getContext('2d') as CanvasRenderingContext2D
     if (options.eventsReceive && options.eventsReceive.length > 0) {
       this.eventsReceive = options.eventsReceive
     }
@@ -56,31 +58,77 @@ class FreeDraw {
     if (options.calculationAccuracy) {
       this.calculationAccuracy = options.calculationAccuracy
     }
+    if (options.mouseOnly) {
+      this.mouseOnly = options.mouseOnly
+    }
 
     this.init()
   }
 
   private init() {
-    this.canvasDOM.addEventListener(Mouse.Mousedown, this.distributeCanvasEvents.bind(this))
-    this.canvasDOM.addEventListener(Mouse.Mousemove, this.distributeCanvasEvents.bind(this))
-    this.canvasDOM.addEventListener(Mouse.Mouseup, this.distributeCanvasEvents.bind(this))
-  }
-
-  private distributeCanvasEvents(event: MouseEvent) {
-    const { type, offsetX: x, offsetY: y } = event
-    if (this.mode === Mode.View) {
-      if (type === Mouse.Keydown) return
-    } else {
-      if (type === Mouse.Mousedown) {
-      } else if (type === Mouse.Mouseup) {
-        this.clickedShapeId = ''
-      }
-      if (this.eventsCallBack) {
-      }
+    this.canvasDOM.addEventListener(Mouse.Mousedown, this.distributeCanvasMouseEvents.bind(this))
+    this.canvasDOM.addEventListener(Mouse.Mousemove, this.distributeCanvasMouseEvents.bind(this))
+    this.canvasDOM.addEventListener(Mouse.Mouseup, this.distributeCanvasMouseEvents.bind(this))
+    if (!this.mouseOnly) {
+      window.document.addEventListener(Key.Keydown, this.distributeCanvasKeyEvents.bind(this))
+      window.document.addEventListener(Key.Keyup, this.distributeCanvasKeyEvents.bind(this))
     }
   }
 
-  private updateMode(mode: Mode.Edit | Mode.View, id?: string) {
+  // **************************** EVENTS ****************************
+  private distributeCanvasMouseEvents(event: MouseEvent) {
+    const { type, offsetX, offsetY } = event
+    if (this.mode === Mode.View) {
+      if (type === Mouse.Mousedown) {
+      }
+    } else if (this.mode === Mode.Edit) {
+      const editingShape = this.shapeInCanvas[this.editingShapeId]
+      if (editingShape && !editingShape.isFinished) {
+        if (type === Mouse.Mousedown) {
+          if (editingShape.includes(offsetX, offsetY)) {
+            this.clickedShapeId = editingShape.id
+            editingShape.edit = true
+          } else {
+            editingShape.edit = false
+          }
+        } else if (type === Mouse.Mouseup) {
+          this.clickedShapeId = ''
+        }
+        editingShape.mouseEventTrigger(event)
+      }
+      if (this.eventsCallBack) {
+      }
+      this.refreshShapes()
+    }
+  }
+
+  private distributeCanvasKeyEvents(event: KeyboardEvent) {
+    if (this.mode === Mode.View) {
+    } else if (this.mode === Mode.Edit) {
+      const editingShape = this.shapeInCanvas[this.editingShapeId]
+      if (editingShape) {
+        editingShape.keyEventTrigger(event)
+      }
+      if (this.eventsCallBack) {
+      }
+      this.refreshShapes()
+    }
+  }
+
+  // **************************** GLOBAL / CANVAS ****************************
+  public updateCtxStyle(style: ShapeStyle) {
+    if (style.lineWidth) {
+      this.ctx.lineWidth = style.lineWidth
+    }
+    if (style.fillStyle) {
+      this.ctx.fillStyle = style.fillStyle
+    }
+    if (style.strokeStyle) {
+      this.ctx.strokeStyle = style.strokeStyle
+    }
+  }
+
+  public updateMode(mode: Mode.Edit | Mode.View, id?: string) {
     this.mode = mode
     if (id) {
       this.editingShapeId = id
@@ -89,9 +137,10 @@ class FreeDraw {
     }
   }
 
-  private refreshShapes() {
+  public refreshShapes() {
     this.clearCanvas()
-    for (let key in Object.keys(this.shapeInCanvas)) {
+    for (const key of Object.keys(this.shapeInCanvas)) {
+      this.shapeInCanvas[key].draw()
     }
   }
 
@@ -99,71 +148,36 @@ class FreeDraw {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
   }
 
-  private rectOptionFactory(option: RectOption) {
-    if (option.startPoint && option.startPoint.length > 0 && option.width && option.height) {
-      option.startPoint = this.getCoordinateWithoutZoomAndOffset(option.startPoint)
-      option.height = this.removeZoomForLength(option.height)
-      option.width = this.removeZoomForLength(option.width)
-    } else if (option.points && option.points.length === 4) {
-      option.startPoint = this.getCoordinateWithoutZoomAndOffset(option.points[0])
-      option.width = this.removeZoomForLength(option.points[1][0] - option.points[0][0])
-      option.height = this.removeZoomForLength(option.points[3][1] - option.points[0][1])
-    }
-    return option
-  }
-
-  private polygonOptionFactory(option: PolygonOption) {
-    return option
-  }
-
-  private ellipseOptionFactory(option: EllipseOption) {
-    return option
-  }
-
-  public getCoordinateWithoutZoomAndOffset(point: Array<number>) {
-    return [0, 0]
-  }
-
-  public getCoordinateWithZoomAndOffset(point: Array<number>) {
-    return [0, 0]
-  }
-
-  public removeZoomForLength(length: number) {
-    return Number((length / this.zoomLevel).toFixed(this.calculationAccuracy))
-  }
-
-  public addZoomForLength(length: number) {
-    return Number((length * this.zoomLevel).toFixed(this.calculationAccuracy))
-  }
-
   public remove(id: string) {
     if (this.shapeInCanvas[id]) {
       delete this.shapeInCanvas[id]
-      this.refresh()
+      this.refreshShapes()
     }
   }
 
   public removeAll() {
     this.shapeInCanvas = {}
-    this.refresh()
+    this.mode = Mode.View
+    this.refreshShapes()
   }
 
   public create(option: RectOption | EllipseOption | PolygonOption) {
     const { id, type } = option
     let shape = null
     if (this.mode === Mode.Edit) throw new Error(`Can only edit one shape at a time`)
-    if (this.shapeInCanvas[id])
-      throw new Error(`Id must be unique, shape id '${id}' has already exist`)
+    if (this.shapeInCanvas[id]) {
+      throw new Error(`Id must be unique, shape id "${id}" has already exist`)
+    }
     this.updateMode(Mode.Edit, id)
     option.freeDraw = this
     if (type === ShapeType.Rect) {
-      shape = new Rect(this.rectOptionFactory(<RectOption>option))
-    } else if (type === ShapeType.Ellipse) {
-      shape = new Polygon(this.polygonOptionFactory(<PolygonOption>option))
+      shape = new Rect(this.rectOptionFactory(option as RectOption))
     } else if (type === ShapeType.Polygon) {
-      shape = new Ellipse(this.ellipseOptionFactory(<EllipseOption>option))
+      shape = new Polygon(this.polygonOptionFactory(option as PolygonOption))
+    } else if (type === ShapeType.Ellipse) {
+      shape = new Ellipse(this.ellipseOptionFactory(option as EllipseOption))
     } else {
-      throw new Error(`Shape type ${type} is not support`)
+      throw new Error(`Shape type "${type}" is not support`)
     }
     this.shapeInCanvas[id] = shape
     return this.shapeInCanvas[id]
@@ -185,16 +199,60 @@ class FreeDraw {
     this.refreshShapes()
   }
 
-  public updateCtxStyle(style: ShapeStyle) {
-    if (style.lineWidth) {
-      this.ctx.lineWidth = style.lineWidth
+  // **************************** FACTORY ****************************
+  private rectOptionFactory(option: RectOption) {
+    if (option.startPoint && option.startPoint.length > 0 && option.width && option.height) {
+      option.startPoint = this.getCoordinateWithoutZoomAndOffset(option.startPoint)
+      option.height = this.removeZoomForLength(option.height)
+      option.width = this.removeZoomForLength(option.width)
+    } else if (option.points && option.points.length === 4) {
+      option.startPoint = this.getCoordinateWithoutZoomAndOffset(option.points[0])
+      option.width = this.removeZoomForLength(option.points[1][0] - option.points[0][0])
+      option.height = this.removeZoomForLength(option.points[3][1] - option.points[0][1])
     }
-    if (style.fillStyle) {
-      this.ctx.fillStyle = style.fillStyle
+    return option
+  }
+
+  private polygonOptionFactory(option: PolygonOption) {
+    if (option.points && option.points.length > 0) {
+      option.points = option.points.map(point => this.getCoordinateWithoutZoomAndOffset(point))
     }
-    if (style.strokeStyle) {
-      this.ctx.strokeStyle = style.strokeStyle
-    }
+    return option
+  }
+
+  private ellipseOptionFactory(option: EllipseOption) {
+    return option
+  }
+
+  // **************************** UTILS ****************************
+  public getCoordinateWithoutZoomAndOffset(point: number[]) {
+    let x = point[0]
+    let y = point[1]
+    x = (x - this.offsetLeft - this.transformCenter[0]) * this.zoomLevel + this.transformCenter[0]
+    y = (y - this.offsetTop - this.transformCenter[1]) * this.zoomLevel + this.transformCenter[1]
+
+    return [this.toFixedAccuracy(x), this.toFixedAccuracy(y)]
+  }
+
+  public getCoordinateWithZoomAndOffset(point: number[]) {
+    let x = point[0]
+    let y = point[1]
+    x = (x - this.transformCenter[0]) / this.zoomLevel + this.transformCenter[0] + this.offsetLeft
+    y = (y - this.transformCenter[1]) / this.zoomLevel + this.transformCenter[1] + this.offsetTop
+
+    return [this.toFixedAccuracy(x), this.toFixedAccuracy(y)]
+  }
+
+  public removeZoomForLength(length: number) {
+    return this.toFixedAccuracy(length / this.zoomLevel)
+  }
+
+  public addZoomForLength(length: number) {
+    return this.toFixedAccuracy(length * this.zoomLevel)
+  }
+
+  public toFixedAccuracy(value: number) {
+    return Number(value.toFixed(this.calculationAccuracy))
   }
 }
 
