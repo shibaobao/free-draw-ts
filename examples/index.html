@@ -41,8 +41,12 @@
       const fd = new freeDraw({
         canvasDOM: document.getElementById('canvas')
       })
-      console.log(fd)
-      fd.setZoomAndOffset(1, [0, 0], 0, 0)
+      fd.setZoomAndOffset({
+        zoomLevel: 3,
+        offsetTop: 100,
+        offsetLeft: 100,
+        transformCenter: [0, 0]
+      })
 
       let options = document.querySelectorAll('.options')
       options.forEach(option => {
@@ -50,6 +54,7 @@
           const { name } = event.target.dataset
           try {
             switch (name) {
+              // All configs are defined under current client viewport.
               case 'Ellipse':
                 fd.create({
                   id: `${name}-${Math.random()}`,

@@ -103,16 +103,19 @@ class Rect extends Shape {
   protected handleMouseMove(event: MouseEvent) {
     const { offsetX: x, offsetY: y } = event
     if (this.clickedHandlePointIndex !== -1) {
+      // Clicked on handle point
       this.resizeRectByPoint(x, y)
       if (this.freeDraw.eventsReceive.includes(FreeDrawEvents.Transform)) {
         this.freeDraw.eventsCallBack(event, this.id, FreeDrawEvents.Transform)
       }
     } else if (this.clickedHandleLineIndex !== -1) {
+      // Clicked on handle line
       this.resizeRectByLine(x, y)
       if (this.freeDraw.eventsReceive.includes(FreeDrawEvents.Transform)) {
         this.freeDraw.eventsCallBack(event, this.id, FreeDrawEvents.Transform)
       }
     } else if (this.clickedInShapePoint) {
+      // Clicked inside the shape
       this.moveRect(x, y)
       if (this.freeDraw.eventsReceive.includes(FreeDrawEvents.Drag)) {
         this.freeDraw.eventsCallBack(event, this.id, FreeDrawEvents.Drag)
@@ -124,17 +127,19 @@ class Rect extends Shape {
   private resizeRectByPoint(x: number, y: number) {
     const basePoint = this.handlePoints[this.clickedHandlePointIndex].point
     const ratio = this.width / this.height
-    const deltaX = (x - basePoint[0]) / this.freeDraw.zoomLevel
+    const deltaWidth = (x - basePoint[0]) / this.freeDraw.zoomLevel
+    const deltaHeight = deltaWidth / ratio
+    const deltaX = (x - basePoint[0]) * this.freeDraw.zoomLevel
     const deltaY = deltaX / ratio
     const increment = [
-      // width, height, startPoint[0], startPoint[1]
+      // width, height, startPoint[0], startPoint[1], increases or decreases or maintains
       [-1, -1, 1, 1],
       [1, 1, 0, -1],
       [1, 1, 0, 0],
       [-1, -1, 1, 0]
     ]
-    const newWidth = this.width + deltaX * increment[this.clickedHandlePointIndex][0]
-    const newHeight = this.height + deltaY * increment[this.clickedHandlePointIndex][1]
+    const newWidth = this.width + deltaWidth * increment[this.clickedHandlePointIndex][0]
+    const newHeight = this.height + deltaHeight * increment[this.clickedHandlePointIndex][1]
     if (newWidth > 0 && newHeight > 0) {
       this.width = newWidth
       this.height = newHeight
@@ -147,8 +152,10 @@ class Rect extends Shape {
 
   private resizeRectByLine(x: number, y: number) {
     const baseLine = this.handleLines[this.clickedHandleLineIndex]
-    const deltaX = (x - baseLine.startPoint[0]) / this.freeDraw.zoomLevel
-    const deltaY = (y - baseLine.startPoint[1]) / this.freeDraw.zoomLevel
+    const deltaWidth = (x - baseLine.startPoint[0]) / this.freeDraw.zoomLevel
+    const deltaHeight = (y - baseLine.startPoint[1]) / this.freeDraw.zoomLevel
+    const deltaX = (x - baseLine.startPoint[0]) * this.freeDraw.zoomLevel
+    const deltaY = (y - baseLine.startPoint[1]) * this.freeDraw.zoomLevel
     const increment = [
       // width, height, startPoint[0], startPoint[1]
       [0, -1, 0, 1],
@@ -156,8 +163,8 @@ class Rect extends Shape {
       [0, 1, 0, 0],
       [-1, 0, 1, 0]
     ]
-    const newWidth = this.width + deltaX * increment[this.clickedHandleLineIndex][0]
-    const newHeight = this.height + deltaY * increment[this.clickedHandleLineIndex][1]
+    const newWidth = this.width + deltaWidth * increment[this.clickedHandleLineIndex][0]
+    const newHeight = this.height + deltaHeight * increment[this.clickedHandleLineIndex][1]
     if (newWidth > 0 && newHeight > 0) {
       this.width = newWidth
       this.height = newHeight
@@ -170,8 +177,8 @@ class Rect extends Shape {
 
   private moveRect(x: number, y: number) {
     if (this.clickedInShapePoint) {
-      const deltaX = (x - this.clickedInShapePoint[0]) / this.freeDraw.zoomLevel
-      const deltaY = (y - this.clickedInShapePoint[1]) / this.freeDraw.zoomLevel
+      const deltaX = (x - this.clickedInShapePoint[0]) * this.freeDraw.zoomLevel
+      const deltaY = (y - this.clickedInShapePoint[1]) * this.freeDraw.zoomLevel
       this.startPoint[0] += deltaX
       this.startPoint[1] += deltaY
 

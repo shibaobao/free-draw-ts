@@ -32,8 +32,10 @@ class Polygon extends Shape {
     this.generateHandlePoints()
     this.generateHandleLines()
     if (this.isDrawing) {
+      // If the polygon is not closed, handle lines and points will not be drawn
       this.drawPolygonAnchorPoints()
     } else if (this.edit) {
+      // Display all control elements after finishing the polygon
       this.drawHandleLines()
       this.drawHandlePoints()
       this.drawPolygonAnchorPoints()
@@ -44,7 +46,7 @@ class Polygon extends Shape {
     const { anchorPoints } = this.getAttributes()
     let polygonPath = `M${anchorPoints.map(point => point.join(',')).join('L')}`
     if (!this.isDrawing) {
-      // If the polygon has closed, get rid of the last element in the points array
+      // If the polygon has closed, get rid of the last element in the points array because it resembles the first one.
       polygonPath = `M${anchorPoints
         .map(point => point.join(','))
         .slice(0, -1)
@@ -60,15 +62,16 @@ class Polygon extends Shape {
   }
 
   private drawPolygonAnchorPoints() {
-    for (let i = 0; i < this.anchorPoints.length; i++) {
-      // If the polygon is closed, the last element in the array should not be drawn
-      if (!this.isDrawing && i === this.anchorPoints.length - 1) {
+    const { anchorPoints } = this.getAttributes()
+    for (let i = 0; i < anchorPoints.length; i++) {
+      if (!this.isDrawing && i === anchorPoints.length - 1) {
+        // If the polygon is closed, the last point in the array should not be drawn because it resembles the first one.
         break
       }
       const anchorPointObj = new Path2D()
       anchorPointObj.arc(
-        this.anchorPoints[i].point[0],
-        this.anchorPoints[i].point[1],
+        anchorPoints[i][0],
+        anchorPoints[i][1],
         this.anchorPointStyle.radius,
         0,
         2 * Math.PI,
@@ -87,9 +90,11 @@ class Polygon extends Shape {
     let xCoordinates = anchorPoints.map(point => point[0])
     let yCoordinates = anchorPoints.map(point => point[1])
     if (!this.isDrawing) {
+      // If the polygon is closed, the last point should not be taken into account or the max-min result will remain the same as the very beginning.
       xCoordinates.splice(-1, 1)
       yCoordinates.splice(-1, 1)
     }
+    // The replacement method of the origin 4 ifs
     const top = Math.min(...yCoordinates)
     const bottom = Math.max(...yCoordinates)
     const left = Math.min(...xCoordinates)
@@ -160,7 +165,7 @@ class Polygon extends Shape {
           point: this.freeDraw.getCoordinateWithoutZoomAndOffset([x, y])
         })
       } else {
-        // Clicked on the first anchor point
+        // Close path when clicking on the first anchor point
         this.anchorPoints.push({
           path: null,
           point: [this.anchorPoints[0].point[0], this.anchorPoints[0].point[1]]
@@ -230,8 +235,8 @@ class Polygon extends Shape {
   private movePolygon(x: number, y: number) {
     let anchorPoints: Array<HandlePoint> = []
     if (this.clickedInShapePoint) {
-      const deltaX = (x - this.clickedInShapePoint[0]) / this.freeDraw.zoomLevel
-      const deltaY = (y - this.clickedInShapePoint[1]) / this.freeDraw.zoomLevel
+      const deltaX = (x - this.clickedInShapePoint[0]) * this.freeDraw.zoomLevel
+      const deltaY = (y - this.clickedInShapePoint[1]) * this.freeDraw.zoomLevel
       anchorPoints = this.anchorPoints.map(each => {
         return {
           path: each.path,
@@ -246,10 +251,9 @@ class Polygon extends Shape {
 
   private movePolygonAnchorPoint(x: number, y: number) {
     if (this.clickedAnchorPointIndex !== -1) {
-      const deltaX =
-        (x - this.anchorPoints[this.clickedAnchorPointIndex].point[0]) / this.freeDraw.zoomLevel
-      const deltaY =
-        (y - this.anchorPoints[this.clickedAnchorPointIndex].point[1]) / this.freeDraw.zoomLevel
+      const { anchorPoints } = this.getAttributes()
+      const deltaX = (x - anchorPoints[this.clickedAnchorPointIndex][0]) * this.freeDraw.zoomLevel
+      const deltaY = (y - anchorPoints[this.clickedAnchorPointIndex][1]) * this.freeDraw.zoomLevel
 
       this.anchorPoints[this.clickedAnchorPointIndex].point[0] += deltaX
       this.anchorPoints[this.clickedAnchorPointIndex].point[1] += deltaY

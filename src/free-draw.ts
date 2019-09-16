@@ -221,6 +221,13 @@ class FreeDraw {
   }
 
   private ellipseOptionFactory(option: EllipseOption) {
+    if (option.radiusX && option.radiusY && option.x && option.y) {
+      option.radiusX = this.removeZoomForLength(option.radiusX)
+      option.radiusY = this.removeZoomForLength(option.radiusY)
+      const centerPoint = this.getCoordinateWithoutZoomAndOffset([option.x, option.y])
+      option.x = centerPoint[0]
+      option.y = centerPoint[1]
+    }
     return option
   }
 
@@ -230,7 +237,6 @@ class FreeDraw {
     let y = point[1]
     x = (x - this.offsetLeft - this.transformCenter[0]) * this.zoomLevel + this.transformCenter[0]
     y = (y - this.offsetTop - this.transformCenter[1]) * this.zoomLevel + this.transformCenter[1]
-
     return [this.toFixedAccuracy(x), this.toFixedAccuracy(y)]
   }
 

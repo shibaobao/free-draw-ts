@@ -149,7 +149,9 @@ class Ellipse extends Shape {
   private resizeEllipseByPoint(x: number, y: number) {
     const basePoint = this.handlePoints[this.clickedHandlePointIndex].point
     const ratio = this.radiusX / this.radiusY
-    const deltaX = (x - basePoint[0]) / this.freeDraw.zoomLevel
+    const deltaWidth = (x - basePoint[0]) / this.freeDraw.zoomLevel
+    const deltaHeight = deltaWidth / ratio
+    const deltaX = (x - basePoint[0]) * this.freeDraw.zoomLevel
     const deltaY = deltaX / ratio
     const increment = [
       // radiusX, radiusY, x, y
@@ -159,8 +161,8 @@ class Ellipse extends Shape {
       [-1, -1, 1, -1]
     ]
 
-    const newRadiusX = this.radiusX + (deltaX * increment[this.clickedHandlePointIndex][0]) / 2
-    const newRadiusY = this.radiusY + (deltaY * increment[this.clickedHandlePointIndex][1]) / 2
+    const newRadiusX = this.radiusX + (deltaWidth * increment[this.clickedHandlePointIndex][0]) / 2
+    const newRadiusY = this.radiusY + (deltaHeight * increment[this.clickedHandlePointIndex][1]) / 2
     if (newRadiusX > 0 && newRadiusY > 0) {
       this.radiusX = newRadiusX
       this.radiusY = newRadiusY
@@ -173,8 +175,10 @@ class Ellipse extends Shape {
 
   private resizeEllipseByLine(x: number, y: number) {
     const baseLine = this.handleLines[this.clickedHandleLineIndex]
-    const deltaX = (x - baseLine.startPoint[0]) / this.freeDraw.zoomLevel
-    const deltaY = (y - baseLine.startPoint[1]) / this.freeDraw.zoomLevel
+    const deltaWidth = (x - baseLine.startPoint[0]) / this.freeDraw.zoomLevel
+    const deltaHeight = (y - baseLine.startPoint[1]) / this.freeDraw.zoomLevel
+    const deltaX = (x - baseLine.startPoint[0]) * this.freeDraw.zoomLevel
+    const deltaY = (y - baseLine.startPoint[1]) * this.freeDraw.zoomLevel
     const increment = [
       // radiusX, radiusY, x, y
       [0, -1, 0, 1],
@@ -183,8 +187,8 @@ class Ellipse extends Shape {
       [-1, 0, 1, 0]
     ]
 
-    const newRadiusX = this.radiusX + (deltaX * increment[this.clickedHandleLineIndex][0]) / 2
-    const newRadiusY = this.radiusY + (deltaY * increment[this.clickedHandleLineIndex][1]) / 2
+    const newRadiusX = this.radiusX + (deltaWidth * increment[this.clickedHandleLineIndex][0]) / 2
+    const newRadiusY = this.radiusY + (deltaHeight * increment[this.clickedHandleLineIndex][1]) / 2
     if (newRadiusX > 0 && newRadiusY > 0) {
       this.radiusX = newRadiusX
       this.radiusY = newRadiusY
@@ -197,8 +201,8 @@ class Ellipse extends Shape {
 
   private moveEllipse(x: number, y: number) {
     if (this.clickedInShapePoint) {
-      const deltaX = (x - this.clickedInShapePoint[0]) / this.freeDraw.zoomLevel
-      const deltaY = (y - this.clickedInShapePoint[1]) / this.freeDraw.zoomLevel
+      const deltaX = (x - this.clickedInShapePoint[0]) * this.freeDraw.zoomLevel
+      const deltaY = (y - this.clickedInShapePoint[1]) * this.freeDraw.zoomLevel
       this.x += deltaX
       this.y += deltaY
 
