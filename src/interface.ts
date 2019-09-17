@@ -4,6 +4,7 @@ export interface FreeDrawOptions {
   canvasDOM: HTMLCanvasElement
   eventsReceive?: Array<string>
   eventsCallBack?: Function
+  keyboardListen?: Boolean
   zoomLevel?: number
   offsetTop?: number
   offsetLeft?: number
@@ -20,7 +21,7 @@ export interface ZoomAndOffset {
 
 export interface ShapeStyle {
   lineWidth: number
-  fillStyle: string
+  fillStyle?: string
   strokeStyle: string
 }
 
@@ -36,6 +37,24 @@ export interface HandlePointStyle {
   size: number
 }
 
+export interface HandleLine {
+  path: Path2D | null
+  startPoint: Array<number>
+  endPoint: Array<number>
+}
+
+export interface HandleLineStyle {
+  lineWidth: number
+  strokeStyle: string
+}
+
+export interface AnchorPointStyle {
+  lineWidth: number
+  fillStyle: string
+  strokeStyle: string
+  radius: number
+}
+
 export interface RectOption {
   id: string
   type: ShapeType.Rect
@@ -45,6 +64,7 @@ export interface RectOption {
   height?: number
   shapeStyle?: ShapeStyle
   handlePointStyle?: HandlePointStyle
+  handleLineStyle?: HandleLineStyle
   withZoomAndOffset?: boolean
   freeDraw?: any
 }
@@ -62,7 +82,8 @@ export interface EllipseOption {
   anticlockwise?: boolean
   withZoomAndOffset?: boolean
   shapeStyle?: ShapeStyle
-  handlePointStyle: HandlePointStyle
+  handlePointStyle?: HandlePointStyle
+  handleLineStyle?: HandleLineStyle
   freeDraw?: any
 }
 
@@ -70,8 +91,11 @@ export interface PolygonOption {
   id: string
   type: ShapeType.Polygon
   points?: Array<Array<number>>
+  maxPointsNumber?: number
   shapeStyle?: ShapeStyle
   handlePointStyle?: HandlePointStyle
+  handleLineStyle?: HandleLineStyle
+  anchorPointStyle?: AnchorPointStyle
   freeDraw?: any
 }
 
