@@ -4,7 +4,7 @@ export interface FreeDrawOptions {
   canvasDOM: HTMLCanvasElement
   eventsReceive?: Array<string>
   eventsCallBack?: Function
-  mouseOnly?: Boolean
+  keyboardListen?: Boolean
   zoomLevel?: number
   offsetTop?: number
   offsetLeft?: number

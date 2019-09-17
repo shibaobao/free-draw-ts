@@ -16,7 +16,7 @@ class FreeDraw {
   ctx: CanvasRenderingContext2D
   canvasDOM: HTMLCanvasElement
 
-  mouseOnly: Boolean = false
+  keyboardListen: Boolean = false
 
   mode: string = Mode.View
   editingShapeId: string = ''
@@ -58,8 +58,8 @@ class FreeDraw {
     if (options.calculationAccuracy) {
       this.calculationAccuracy = options.calculationAccuracy
     }
-    if (options.mouseOnly) {
-      this.mouseOnly = options.mouseOnly
+    if (options.keyboardListen) {
+      this.keyboardListen = options.keyboardListen
     }
 
     this.init()
@@ -69,7 +69,7 @@ class FreeDraw {
     this.canvasDOM.addEventListener(Mouse.Mousedown, this.distributeCanvasMouseEvents.bind(this))
     this.canvasDOM.addEventListener(Mouse.Mousemove, this.distributeCanvasMouseEvents.bind(this))
     this.canvasDOM.addEventListener(Mouse.Mouseup, this.distributeCanvasMouseEvents.bind(this))
-    if (!this.mouseOnly) {
+    if (this.keyboardListen) {
       window.document.addEventListener(Key.Keydown, this.distributeCanvasKeyEvents.bind(this))
       window.document.addEventListener(Key.Keyup, this.distributeCanvasKeyEvents.bind(this))
     }
@@ -79,8 +79,7 @@ class FreeDraw {
   private distributeCanvasMouseEvents(event: MouseEvent) {
     const { type, offsetX, offsetY } = event
     if (this.mode === Mode.View) {
-      if (type === Mouse.Mousedown) {
-      }
+      // if (type === Mouse.Mousedown) {}
     } else if (this.mode === Mode.Edit) {
       const editingShape = this.shapeInCanvas[this.editingShapeId]
       if (editingShape && !editingShape.isFinished) {
@@ -96,21 +95,21 @@ class FreeDraw {
         }
         editingShape.mouseEventTrigger(event)
       }
-      if (this.eventsCallBack) {
-      }
+      // if (this.eventsCallBack) {}
       this.refreshShapes()
     }
   }
 
   private distributeCanvasKeyEvents(event: KeyboardEvent) {
     if (this.mode === Mode.View) {
+      return
     } else if (this.mode === Mode.Edit) {
       const editingShape = this.shapeInCanvas[this.editingShapeId]
       if (editingShape) {
         editingShape.keyEventTrigger(event)
       }
-      if (this.eventsCallBack) {
-      }
+      // if (this.eventsCallBack) {
+      // }
       this.refreshShapes()
     }
   }
